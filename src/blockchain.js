@@ -78,11 +78,12 @@ class Blockchain {
         this.height = this.chain.length - 1;
 
         debugger;
-        var result = await this.validateChain();        
-         if(!result)
-         {
-           reject(result);
-         }
+        var result = await this.validateChain();
+        debugger;
+        
+        if (!result) {
+          reject(result);
+        }
 
         resolve(block);
       } catch (e) {
@@ -211,31 +212,37 @@ class Blockchain {
     let self = this;
     let errorLog = [];
     return new Promise(async (resolve, reject) => {
-      debugger;      
-        for (var i = 0; i < this.chain.length; i++) 
-        {
-          try {
-            debugger;
+      debugger;
 
-            var validate = await this.chain[i].validate();
-            
-            if (!validate) {
-              debugger;
-              reject("Chain is broken");
-            }
+      var errorList = [];
+      for (var i = 0; i < this.chain.length; i++) {
+        try {
+          debugger;
 
-            if (i > 0 && this.chain[i].previousBlockHash != this.chain[i - 1].hash) 
-            {
-              debugger;
-              reject("Chain is broken");
-            }
-          } catch (error) {
-            reject(error);
+          var validate = await this.chain[i].validate();
+          debugger;
+
+          if (!validate) {
+            errorList.push("data on chain${i} has been tampered.");
           }
-        }
 
+          if (
+            i > 0 &&
+            this.chain[i].previousBlockHash != this.chain[i - 1].hash
+          ) {
+            errorList.push("link on chain${i} is broken.");
+          }
+        } catch (error) {
+          errorList.push(error);
+        }
+      }
+
+      if (errorList.length == 0) {
         resolve("chain is good");
-      
+      }
+
+      resolve(errorList);
+
     });
   }
 
